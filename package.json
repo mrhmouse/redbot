@@ -1,0 +1,24 @@
+{
+  "name": "redbot",
+  "version": "0.0.0",
+  "description": "A simple chatbot for #redspider",
+  "main": "bot.coffee",
+  "dependencies": {
+    "irc": "~0.3.6",
+    "string-format": "~0.2.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mrhmouse/redbot.git"
+  },
+  "author": "Jordan Brown",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/mrhmouse/redbot/issues"
+  },
+	"private" : true
+}
