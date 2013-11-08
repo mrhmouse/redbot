@@ -2,7 +2,7 @@
   "name": "redbot",
   "version": "0.0.0",
   "description": "A simple chatbot for #redspider",
-  "main": "bot.coffee",
+  "main": "bot.js",
   "dependencies": {
     "irc": "~0.3.6",
     "string-format": "~0.2.1"
