@@ -36,25 +36,39 @@
       return items[Math.floor(index)];
     };
 
-    function Bot(name, channel, chattiness) {
-      var _this = this;
+    function Bot(_arg) {
+      var _ref, _ref1, _ref2, _ref3, _ref4,
+        _this = this;
 
-      this.name = name;
-      this.channel = channel;
-      this.chattiness = chattiness != null ? chattiness : 0;
+      this.name = _arg.name, this.channel = _arg.channel, this.chattiness = _arg.chattiness, this.muted = _arg.muted, this.server = _arg.server;
       this.respond = __bind(this.respond, this);
       this.canRespondTo = __bind(this.canRespondTo, this);
       this.save = __bind(this.save, this);
       this.prepare = __bind(this.prepare, this);
       this.receive = __bind(this.receive, this);
       this.dump = __bind(this.dump, this);
+      if ((_ref = this.name) == null) {
+        this.name = 'ruddy';
+      }
+      if ((_ref1 = this.channel) == null) {
+        this.channel = '#redspider';
+      }
+      if ((_ref2 = this.chattiness) == null) {
+        this.chattiness = 0;
+      }
+      if ((_ref3 = this.muted) == null) {
+        this.muted = false;
+      }
+      if ((_ref4 = this.server) == null) {
+        this.server = 'localhost';
+      }
       this.names = [this.name];
       this.messages = require('./database.json');
       this.client = (function() {
         var client, irc;
 
         irc = require('irc');
-        client = new irc.Client('irc.foonetic.net', _this.name, {
+        client = new irc.Client(_this.server, _this.name, {
           channels: [_this.channel],
           userName: _this.name,
           realName: _this.name
@@ -93,6 +107,7 @@
       var message;
 
       message = this.prepare(text);
+      console.log(from, ': ', text);
       if (this.canRespondTo(text)) {
         this.respond(from, message);
       }
@@ -138,29 +153,35 @@
     };
 
     Bot.prototype.canRespondTo = function(message) {
-      return Math.random() <= this.chattiness || 0 <= message.indexOf(this.name);
+      return !this.muted && (Math.random() <= this.chattiness || 0 <= message.indexOf(this.name));
     };
 
     Bot.prototype.respond = function(from, message) {
       var count, i, index, m, matches, w, word, words, _ref;
 
       words = (function() {
-        var _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _results;
+        var _i, _j, _len, _len1, _ref, _ref1, _results;
 
         _ref = message.words;
         _results = [];
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           word = _ref[_i];
           count = 0;
-          _ref1 = this.messages;
+          _ref1 = (function() {
+            var _k, _len1, _ref1, _results1;
+
+            _ref1 = this.messages;
+            _results1 = [];
+            for (_k = 0, _len1 = _ref1.length; _k < _len1; _k++) {
+              m = _ref1[_k];
+              _results1.push(m.words);
+            }
+            return _results1;
+          }).call(this);
           for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-            m = _ref1[_j];
-            if (w === word) {
-              _ref2 = m.words;
-              for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
-                w = _ref2[_k];
-                count += 1;
-              }
+            w = _ref1[_j];
+            if (0 <= w.indexOf(word)) {
+              count += 1;
             }
           }
           _results.push({
@@ -184,7 +205,8 @@
           })) {
             _results.push({
               i: i,
-              text: m.text
+              text: m.text,
+              words: m.words
             });
           }
         }
@@ -194,12 +216,14 @@
         return;
       }
       matches.sort(function(a, b) {
-        return (similarity(b.text, words)) - (similarity(a.text, words));
+        return (similarity(b.words, words)) - (similarity(a.words, words));
       });
       matches = matches.slice(0, 6);
       index = pickOne(matches);
       message = this.messages[index.i + 1];
       if (message != null) {
+        console.log(this.name, ': ', message.text);
+        this.save(message);
         return this.client.say(this.channel, (_ref = message.text).format.apply(_ref, [from].concat(__slice.call(this.names))));
       }
     };
