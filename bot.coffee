@@ -14,12 +14,17 @@ class Bot
 		index *= Math.pow 10, ( items.length - 1 ) / 10
 		items[Math.floor index]
 
-	constructor: ( @name, @channel, @chattiness = 0 ) ->
+	constructor: ({ @name, @channel, @chattiness, @muted, @server  }) ->
+		@name ?= 'ruddy'
+		@channel ?= '#redspider'
+		@chattiness ?= 0
+		@muted ?= no
+		@server ?= 'localhost'
 		@names = [@name]
 		@messages = require './database.json'
 		@client = do =>
 			irc = require 'irc'
-			client = new irc.Client 'irc.foonetic.net', @name,
+			client = new irc.Client @server, @name,
 				channels: [@channel]
 				userName: @name
 				realName: @name
@@ -38,6 +43,7 @@ class Bot
 
 	receive: ( from, text ) =>
 		message = @prepare text
+		console.log from, ': ', text
 		if @canRespondTo text
 			@respond from, message
 		@save message
@@ -61,23 +67,23 @@ class Bot
 		@messages.push message
 
 	canRespondTo: ( message ) =>
-		Math.random() <= @chattiness or 0 <= message.indexOf @name
+		not @muted and ( Math.random() <= @chattiness or 0 <= message.indexOf @name )
 
 	respond: ( from, message ) =>
 		# Find the best matches
 		words = for word in message.words
 			count = 0
-			count += 1 for w in m.words for m in @messages when w is word
+			count += 1 for w in ( m.words for m in @messages ) when 0 <= w.indexOf word
 			score: count
 			word: word
 
-		matches = ({ i, text: m.text } for m, i in @messages when m.words.some ( w ) ->
+		matches = ({ i, text: m.text, words: m.words } for m, i in @messages when m.words.some ( w ) ->
 			words.some ( w2 ) -> w2.word.toLowerCase() is w.toLowerCase() )
 
 		return unless matches?.length
 
 		matches.sort ( a, b ) ->
-			( similarity b.text, words ) - ( similarity a.text, words )
+			( similarity b.words, words ) - ( similarity a.words, words )
 
 		matches = matches[0..5]
 
@@ -85,6 +91,8 @@ class Bot
 		message = @messages[index.i + 1]
 
 		if message?
+			console.log @name, ': ', message.text
+			@save message
 			@client.say @channel, message.text.format from, @names...
 
 module.exports = Bot
