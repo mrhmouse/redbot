@@ -87,12 +87,18 @@ class Bot
 
 		matches = matches[0..5]
 
-		index = pickOne matches
-		message = @messages[index.i + 1]
+		# Create a munged response
+		response = []
+		for match in matches
+			for word in match.words
+				break if Math.random() < Math.random()
+				response.push word
+				break if ( /^[.,?!;]+$/.test word ) and Math.random() < Math.random()
 
-		if message?
-			console.log @name, ': ', message.text
+		if response.length
+			message = response.join ' '
+			console.log @name, ': ', message
 			@save message
-			@client.say @channel, message.text.format from, @names...
+			@client.say @channel, message.format from, @names...
 
 module.exports = Bot

@@ -157,7 +157,7 @@
     };
 
     Bot.prototype.respond = function(from, message) {
-      var count, i, index, m, matches, w, word, words, _ref;
+      var count, i, m, match, matches, response, w, word, words, _i, _j, _len, _len1, _ref;
 
       words = (function() {
         var _i, _j, _len, _len1, _ref, _ref1, _results;
@@ -219,12 +219,26 @@
         return (similarity(b.words, words)) - (similarity(a.words, words));
       });
       matches = matches.slice(0, 6);
-      index = pickOne(matches);
-      message = this.messages[index.i + 1];
-      if (message != null) {
-        console.log(this.name, ': ', message.text);
+      response = [];
+      for (_i = 0, _len = matches.length; _i < _len; _i++) {
+        match = matches[_i];
+        _ref = match.words;
+        for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
+          word = _ref[_j];
+          if (Math.random() < Math.random()) {
+            break;
+          }
+          response.push(word);
+          if ((/^[.,?!;]+$/.test(word)) && Math.random() < Math.random()) {
+            break;
+          }
+        }
+      }
+      if (response.length) {
+        message = response.join(' ');
+        console.log(this.name, ': ', message);
         this.save(message);
-        return this.client.say(this.channel, (_ref = message.text).format.apply(_ref, [from].concat(__slice.call(this.names))));
+        return this.client.say(this.channel, message.format.apply(message, [from].concat(__slice.call(this.names))));
       }
     };
 
