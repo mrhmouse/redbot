@@ -6,13 +6,13 @@ class Bot
 		response = []
 		stickiness = 0.75
 		falloff = ( 1 - stickiness ) / matches.length
-		for match, i in matches
-			stickiness += i * falloff
+		for match in matches
+			continue if Math.random() < stickiness
+			stickiness += falloff
 			for word in match.words
 				break if stickiness < Math.random()
 				response.push word unless word is response[response.length - 1]
 				break if ( /^[.,?!;]+$/.test word ) and stickiness < Math.random()
-			continue if Math.random() < stickiness
 		text: response.join ' '
 		words: response
 
