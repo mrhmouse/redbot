@@ -7,7 +7,7 @@ class Bot
 		stickiness = 0.75
 		falloff = ( 1 - stickiness ) / matches.length
 		for match, i in matches
-			stickiness -= i * falloff
+			stickiness += i * falloff
 			for word in match.words
 				break if stickiness < Math.random()
 				response.push word
