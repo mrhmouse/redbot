@@ -10,7 +10,7 @@ class Bot
 			stickiness += i * falloff
 			for word in match.words
 				break if stickiness < Math.random()
-				response.push word
+				response.push word unless word is response[response.length - 1]
 				break if ( /^[.,?!;]+$/.test word ) and stickiness < Math.random()
 			continue if Math.random() < stickiness
 		text: response.join ' '
