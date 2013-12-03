@@ -2,6 +2,20 @@ require 'string-format'
 fs = require 'fs'
 
 class Bot
+	getResponseFor = ( matches ) ->
+		response = []
+		stickiness = 0.75
+		falloff = ( 1 - stickiness ) / matches.length
+		for match, i in matches
+			stickiness -= i * falloff
+			for word in match.words
+				break if stickiness < Math.random()
+				response.push word
+				break if ( /^[.,?!;]+$/.test word ) and stickiness < Math.random()
+			continue if Math.random() < stickiness
+		text: response.join ' '
+		words: response
+
 	similarity = ( incoming, words ) ->
 		score = 0
 		for word in incoming
@@ -87,22 +101,12 @@ class Bot
 
 		matches = matches[0..5]
 
-		# Create a munged response
-		response = []
-		stickiness = 0.75
-		for match in matches
-			for word in match.words
-				break if stickiness < Math.random()
-				response.push word
-				break if ( /^[.,?!;]+$/.test word ) and stickiness < Math.random()
-			continue if Math.random() < stickiness
+		response = getResponseFor matches
 
-		if response.length
-			message =
-				words: response
-				text: response.join ' '
-			console.log @name, ':', message.text
-			@save message
-			@client.say @channel, message.text.format from, @names...
+		# Create a munged response
+		if response.text.length
+			console.log @name, ':', response.text
+			@save response
+			@client.say @channel, response.text.format from, @names...
 
 module.exports = Bot
