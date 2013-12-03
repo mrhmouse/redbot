@@ -157,7 +157,7 @@
     };
 
     Bot.prototype.respond = function(from, message) {
-      var count, i, m, match, matches, response, w, word, words, _i, _j, _len, _len1, _ref;
+      var count, i, m, match, matches, response, stickiness, w, word, words, _i, _j, _len, _len1, _ref, _ref1;
 
       words = (function() {
         var _i, _j, _len, _len1, _ref, _ref1, _results;
@@ -180,7 +180,7 @@
           }).call(this);
           for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
             w = _ref1[_j];
-            if (0 <= w.indexOf(word)) {
+            if ((w != null) && 0 <= w.indexOf(word)) {
               count += 1;
             }
           }
@@ -220,25 +220,32 @@
       });
       matches = matches.slice(0, 6);
       response = [];
+      stickiness = 0.75;
       for (_i = 0, _len = matches.length; _i < _len; _i++) {
         match = matches[_i];
         _ref = match.words;
         for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
           word = _ref[_j];
-          if (Math.random() < Math.random()) {
+          if (stickiness < Math.random()) {
             break;
           }
           response.push(word);
-          if ((/^[.,?!;]+$/.test(word)) && Math.random() < Math.random()) {
+          if ((/^[.,?!;]+$/.test(word)) && stickiness < Math.random()) {
             break;
           }
         }
+        if (Math.random() < stickiness) {
+          continue;
+        }
       }
       if (response.length) {
-        message = response.join(' ');
-        console.log(this.name, ': ', message);
+        message = {
+          words: response,
+          text: response.join(' ')
+        };
+        console.log(this.name, ':', message.text);
         this.save(message);
-        return this.client.say(this.channel, message.format.apply(message, [from].concat(__slice.call(this.names))));
+        return this.client.say(this.channel, (_ref1 = message.text).format.apply(_ref1, [from].concat(__slice.call(this.names))));
       }
     };
 
