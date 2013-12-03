@@ -73,7 +73,7 @@ class Bot
 		# Find the best matches
 		words = for word in message.words
 			count = 0
-			count += 1 for w in ( m.words for m in @messages ) when 0 <= w.indexOf word
+			count += 1 for w in ( m.words for m in @messages ) when w? and 0 <= w.indexOf word
 			score: count
 			word: word
 
@@ -89,16 +89,20 @@ class Bot
 
 		# Create a munged response
 		response = []
+		stickiness = 0.75
 		for match in matches
 			for word in match.words
-				break if Math.random() < Math.random()
+				break if stickiness < Math.random()
 				response.push word
-				break if ( /^[.,?!;]+$/.test word ) and Math.random() < Math.random()
+				break if ( /^[.,?!;]+$/.test word ) and stickiness < Math.random()
+			continue if Math.random() < stickiness
 
 		if response.length
-			message = response.join ' '
-			console.log @name, ': ', message
+			message =
+				words: response
+				text: response.join ' '
+			console.log @name, ':', message.text
 			@save message
-			@client.say @channel, message.format from, @names...
+			@client.say @channel, message.text.format from, @names...
 
 module.exports = Bot
